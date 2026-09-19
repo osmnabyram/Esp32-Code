@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef WiFiScan_h
 #define WiFiScan_h
@@ -160,6 +160,7 @@
 #define WIFI_SCAN_DYNAMIC_PORTAL 83
 #define WIFI_SCAN_SILENT_HUNTER 84
 #define WIFI_SCAN_PHISHER 85
+#define WIFI_SCAN_IBB_PHISHER 86
 
 #define WIFI_ATTACK_FUNNY_BEACON 99 
 
@@ -685,6 +686,7 @@ class WiFiScan
     void RunDynamicPortal(uint8_t scan_mode, uint16_t color);
     void RunSilentDataHunter(uint8_t scan_mode, uint16_t color);
     void RunPhisher(uint8_t scan_mode, uint16_t color);
+    void RunIBBPhisher(uint8_t scan_mode, uint16_t color);
     WiFiScan();
 
     //AccessPoint ap_list;

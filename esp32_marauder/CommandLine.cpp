@@ -1,4 +1,4 @@
-#include "CommandLine.h"
+﻿#include "CommandLine.h"
 
 CommandLine::CommandLine() {}
 
@@ -87,7 +87,7 @@ FONKSIYON REHBERI (Kisa Ozet)
 19 - Active EAPOL: Handshake yakalamak icin paket trafigini tetikler.
 20 - Modem Banlama: Kanal degistirme duyurusu ile cihazlari agdan ayirir.
 
-21 - Oltalama (Google): Sahte Google giris sayfasi olusturup sifre yakalar.
+21 - OltAglar: Oltalama portallari alt menusu. 1-DGS WiFi portali.
 22 - Karma (Spoof): Cihazlarin eski aglarini taklit ederek baglanti kurar.
 23 - Dinamik Yonlendirme: Kurbanlari otomatik olarak baska bir URL'ye yonlendirir.
 24 - Sessiz Veri Avcisi: Cihaz bilgilerini arkaplanda analiz eder.
@@ -239,7 +239,7 @@ void CommandLine::printMainMenu() {
   Serial.println(F("Yonetim:                            WiFi Saldiri:          "
                    "             Social / Phishing:           "));
   Serial.println(F("14 - MAC Klon AP (Hedef Gerekir)    17 - Hedefe Deauth "
-                   "(Hedef Gerekir)  21 - Oltalama (Google)       "));
+                   "(Hedef Gerekir)  21 - OltAglar (Menu)   "));
   Serial.println(F("15 - MAC Klon STA (Hedef Gerekir)   18 - Herkese Deauth    "
                    "             22 - Karma (Spoof)           "));
   Serial.println(F("16 - Rastgele MAC                   19 - Active EAPOL "
@@ -334,6 +334,13 @@ void CommandLine::printMenuLayer(int layer) {
     Serial.println(F("0 - Geri Don"));
     Serial.print(F("Secim Yapiniz: "));
     break;
+  case 21:
+    Serial.println(F("--- OLTAGLAR ---"));
+    Serial.println(F("1 - DGS (Dogus WiFi Portali)"));
+    Serial.println(F("2 - M5 Metro (IBB WiFi Portali)"));
+    Serial.println(F("0 - Geri Don"));
+    Serial.print(F("Secim Yapiniz: "));
+    break;
   case 30:
     Serial.println(F("--- OZEL MESAJ YAYINI ---"));
     Serial.println(F("Mesajlarinizi girin."));
@@ -358,6 +365,29 @@ void CommandLine::handleMenuInput(String input) {
       printMainMenu();
     } else {
       printMainMenu();
+    }
+    return;
+  }
+
+  if (current_menu_layer == 21) {
+    int sel = input.toInt();
+    switch (sel) {
+    case 0:
+      current_menu_layer = 0;
+      printMainMenu();
+      break;
+    case 1:
+      current_menu_layer = 0;
+      wifi_scan_obj.StartScan(WIFI_SCAN_PHISHER);
+      break;
+    case 2:
+      current_menu_layer = 0;
+      wifi_scan_obj.StartScan(WIFI_SCAN_IBB_PHISHER);
+      break;
+    default:
+      Serial.println(F("[!] Gecersiz secim."));
+      printMenuLayer(21);
+      break;
     }
     return;
   }
@@ -537,7 +567,8 @@ void CommandLine::handleMenuInput(String input) {
       this->runCommand("attack -t csa");
       break;
     case 21:
-      wifi_scan_obj.StartScan(WIFI_SCAN_PHISHER);
+      current_menu_layer = 21;
+      printMenuLayer(21);
       break;
     case 22:
       this->runCommand("karma -p 0");
@@ -2824,3 +2855,6 @@ void CommandLine::runCommand(String input) {
     }
   }
 }
+
+
+
