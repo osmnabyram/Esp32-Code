@@ -238,10 +238,10 @@ void CommandLine::printMainMenu() {
                    "                                          "));
   Serial.println(F("Yonetim:                            WiFi Saldiri:          "
                    "             Social / Phishing:           "));
-  Serial.println(F("14 - MAC Klon AP (Hedef Gerekir)    17 - Hedefe Deauth "
-                   "(Hedef Gerekir)  21 - OltAglar (Menu)   "));
-  Serial.println(F("15 - MAC Klon STA (Hedef Gerekir)   18 - Herkese Deauth    "
-                   "             22 - Karma (Spoof)           "));
+  Serial.println(F("14 - MAC Klon AP (Hedef Gerekir)    17 - Wifi ici cihaz deauth"
+                   "(Hedef gerekir)  21 - OltAglar (Menu)   "));
+  Serial.println(F("15 - MAC Klon STA (Hedef Gerekir)   18 - Secili wifi deauth    "
+                   "             22 - Karma (Spoof) [GELIS.]  "));
   Serial.println(F("16 - Rastgele MAC                   19 - Active EAPOL "
                    "[GELIS.]          23 - Dinamik Yonlendirme     "));
   Serial.println(F("                                    20 - Channel ve Modem "
@@ -251,16 +251,16 @@ void CommandLine::printMainMenu() {
   Serial.println(F("Hedef Belirleme:                    Wifi Sahte Ag:         "
                    "             ETC:                         "));
   Serial.println(F("24 - Cihazlari Listele              28 - Klon Aglar (Hedef "
-                   "Gerekir)     33 - Wardriving (GPS)        "));
+                   "Gerekir)     33 - Wardriving (GPS) [GELIS.]"));
   Serial.println(F("25 - Ag (AP) Sec                    29 - Rastgele Sahte Ag "
-                   "Seli         34 - PineScan                "));
+                   "Seli         34 - PineScan [GELIS.]       "));
   Serial.println(F("26 - Istasyon (STA) Sec             30 - Ozel Mesaj Yayini (Rickroll)   35 - MAC Takip (MacTrack)    "));
   Serial.println(F("27 - Secimleri Kaldir               31 - Kayitli WiFi "
                    "Taklidi           36 - Paket Istatistikleri    "));
   Serial.println(F("                                    32 - Aga Baglan (Hedef "
                    "Gerekir)     37 - LED Yonetimi            "));
   Serial.println(F("                                                           "
-                   "             38 - Sessiz Veri Avcisi      "));
+                   "             38 - Sessiz Veri Avcisi [GELIS.]"));
   Serial.println(F("                                                           "
                    "             39 - Dosya Sistemi (ls)      "));
   Serial.println(F("                                                           "

