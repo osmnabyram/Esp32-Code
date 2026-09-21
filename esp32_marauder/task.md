@@ -1,0 +1,5 @@
+- [x] Add menu state variables to CommandLine.h
+- [x] Implement showMenu() / printMainMenu() in CommandLine.cpp
+- [x] Implement handleMenuInput() in CommandLine.cpp
+- [x] Update main() to integrate menu handling
+- [x] Flash and verify functionality on hardware
