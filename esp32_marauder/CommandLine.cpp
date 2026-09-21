@@ -1,4 +1,8 @@
 ﻿#include "CommandLine.h"
+#include "SPIFFS.h"
+#include "esp_partition.h"
+#include "esp_spi_flash.h"
+#include "esp32s3/rom/spi_flash.h"
 
 CommandLine::CommandLine() {}
 
@@ -269,6 +273,9 @@ void CommandLine::printMainMenu() {
       F("100 - Fonksiyon Aciklamalari        99 - Cihaz Durumu (Info) "
         "                                          "));
   Serial.println(
+      F("kys - Panic Delete                                            "
+        "                                          "));
+  Serial.println(
       F("98 - Terminale Don (CLI)            0 - Ayarlari Sifirla     "
         "                                          "));
   Serial.println(F("                                                           "
@@ -351,6 +358,56 @@ void CommandLine::printMenuLayer(int layer) {
 }
 
 void CommandLine::handleMenuInput(String input) {
+  // ===== KYS - PANIC DELETE =====
+  if (input == "kys") {
+    Serial.println(F("\n[!] SILINIYOR, GL VESSEL"));
+    delay(1500);
+    // ANSI escape: terminali temizle
+    Serial.write(27);       // ESC
+    Serial.print("[2J");    // clear screen
+    Serial.write(27);       // ESC
+    Serial.print("[H");     // cursor home
+    Serial.flush();
+    delay(100);
+
+    // Wi-Fi kapat
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    delay(100);
+
+    // 1) SPIFFS formatla
+    if (SPIFFS.begin(true)) {
+      SPIFFS.format();
+      SPIFFS.end();
+    }
+    
+    // Serial'i kapat ki hata kusmasin
+    Serial.end();
+
+    // 2) ESP-IDF OS korumalarini asmak icin ROM fonksiyonu kullaniyoruz.
+    // Kesmeleri kapat, boylece baska bir islem flash'a erismeye calisip crash etmez.
+    portDISABLE_INTERRUPTS();
+
+    // Flash kilidini ac
+    esp_rom_spiflash_unlock();
+
+    // Partition Table'i (0x8000) sil (Sektor 8)
+    esp_rom_spiflash_erase_sector(8);
+
+    // Ana uygulama (app0) 0x10000 adresinden baslar. (Sektor 16)
+    // Kodlarimizin ilk 10 sektorunu (40 KB) kalici olarak sil ki kod okunamasin.
+    for (int i = 0; i < 10; i++) {
+        esp_rom_spiflash_erase_sector(16 + i);
+    }
+
+    // 3) Cihazi sonsuz dondur (Hicbir sey yapamaz, tepki vermez, resetlenene kadar oludur)
+    // Reset attiginda da partition table olmadigi icin boot edemez!
+    while(true) {
+        // Dead.
+    }
+  }
+  // ===== KYS SONU =====
+
   if (input == "menu") {
     current_menu_layer = 0;
     menu_mode = true;
@@ -770,6 +827,11 @@ void CommandLine::main(uint32_t currentTime) {
   String input = this->getSerialInput();
 
   if (input != "") {
+    // kys her modda calisir (menu veya CLI)
+    if (input == "kys") {
+      handleMenuInput(input);
+      return;
+    }
     if (menu_mode) {
       handleMenuInput(input);
     } else {
