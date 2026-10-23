@@ -17,6 +17,10 @@ Built on the original ESP32 Marauder, with added modules, performance work, and 
 
 ---
 
+<div align="center">
+<img src="assets/how-it-works.svg" alt="How it works: an animated diagram of the tool's core flow." width="820" />
+</div>
+
 ## About
 
 This is an Advanced Edition built on top of the original [ESP32 Marauder](https://github.com/justcallmekoko/ESP32Marauder) firmware. On top of that base it adds extra modules, performance improvements, and customized UI assets. Instabilities have been addressed, menu transitions made faster, and the build tuned for professional wireless security testing in lab and authorized settings.
